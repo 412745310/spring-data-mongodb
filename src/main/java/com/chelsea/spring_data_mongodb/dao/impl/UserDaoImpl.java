@@ -17,7 +17,7 @@ import com.chelsea.spring_data_mongodb.dao.UserDao;
 @Repository("userDao")
 public class UserDaoImpl implements UserDao {
 
-	private static String COLLECTION_NAME = "users ";
+	private static String COLLECTION_NAME = "users";
 
 	@Resource
 	private MongoTemplate mongoTemplate;

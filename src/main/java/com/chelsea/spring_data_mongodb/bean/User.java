@@ -2,9 +2,6 @@ package com.chelsea.spring_data_mongodb.bean;
 
 import java.io.Serializable;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document
 public class User implements Serializable {
 	/** 
      *  

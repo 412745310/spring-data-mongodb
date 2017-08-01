@@ -42,4 +42,11 @@ public class OrderDao {
 		mongoTemplate.dropCollection(COLLECTION);
 	}
 
+	public List<Order> find(Map<String, Object> params) {
+		Query query = new Query(new Criteria().orOperator(
+				Criteria.where("onumber").is(params.get("onumber1")), Criteria
+						.where("onumber").is(params.get("onumber2"))));
+		List<Order> list = mongoTemplate.find(query, Order.class);
+		return list;
+	}
 }

@@ -116,5 +116,17 @@ public class OrderTest extends TestCase {
 	public void testDropCollection() {
 		orderDao.dropCollection();
 	}
+	
+	@Test
+	public void testFind(){
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("onumber1", "005");
+		params.put("onumber2", "001");
+		List <Order> list = orderDao.find(params);
+		for(int i=0;i<list.size();i++){
+			Order order = list.get(i);
+			System.out.println(order.getOnumber());
+		}
+	}
 
 }

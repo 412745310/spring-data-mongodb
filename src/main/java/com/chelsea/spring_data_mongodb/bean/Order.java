@@ -4,13 +4,16 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.google.code.morphia.annotations.Id;
+
 public class Order implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
+	@Id
 	private String id;
 	private String onumber;
 	private Date date;

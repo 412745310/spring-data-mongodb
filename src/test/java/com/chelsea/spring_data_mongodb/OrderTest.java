@@ -177,7 +177,7 @@ public class OrderTest extends TestCase {
 	}
 
 	@Test
-	public void testAggregation() {
+	public void testGetAggregationByMongo() {
 		Map<String, Object> params = new HashMap<String, Object>();
 		Set<String> onumberSet = new HashSet<String>();
 		onumberSet.add("001");
@@ -185,7 +185,25 @@ public class OrderTest extends TestCase {
 		onumberSet.add("003");
 		params.put("onumberSet", onumberSet);
 		params.put("totalMin", 1);
-		List<TotalResult> list = orderDao.getAggregation(params);
+		List<TotalResult> list = orderDao.getAggregationByMongo(params);
+		for (int i = 0; i < list.size(); i++) {
+			TotalResult result = list.get(i);
+			String id = result.getId();
+			Integer total = result.getTotal();
+			System.out.println("id:" + id + "\ttotal:" + total);
+		}
+	}
+
+	@Test
+	public void testGetAggregationBySpringData() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		Set<String> onumberSet = new HashSet<String>();
+		onumberSet.add("001");
+		onumberSet.add("002");
+		onumberSet.add("003");
+		params.put("onumberSet", onumberSet);
+		params.put("totalMin", 1);
+		List<TotalResult> list = orderDao.getAggregationBySpringData(params);
 		for (int i = 0; i < list.size(); i++) {
 			TotalResult result = list.get(i);
 			String id = result.getId();

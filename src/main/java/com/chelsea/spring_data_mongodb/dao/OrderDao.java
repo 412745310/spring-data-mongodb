@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -138,6 +140,13 @@ public class OrderDao {
 		mongoTemplate.updateMulti(query, update, Order.class);
 	}
 
+	/**
+	 * 通过com.mongodb分页查询
+	 * 
+	 * @param page
+	 * @param params
+	 * @return
+	 */
 	public PageModel<Order> getOrder(PageModel<Order> page,
 			Map<String, Object> params) {
 		String min = (String) params.get("min");
@@ -174,8 +183,14 @@ public class OrderDao {
 		return page;
 	}
 
+	/**
+	 * 通过com.mongodb聚合
+	 * 
+	 * @param params
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
-	public List<TotalResult> getAggregation(Map<String, Object> params) {
+	public List<TotalResult> getAggregationByMongo(Map<String, Object> params) {
 		Set<String> onumberSet = (Set<String>) params.get("onumberSet");
 		Integer totalMin = (Integer) params.get("totalMin");
 		Morphia morphia = new Morphia();
@@ -203,6 +218,35 @@ public class OrderDao {
 				.aggregate(listDBObject);
 		List<TotalResult> datas = new ArrayList<TotalResult>();
 		for (Iterator<DBObject> iterator = output.results().iterator(); iterator
+				.hasNext();) {
+			DBObject obj = iterator.next();
+			datas.add(morphia.fromDBObject(TotalResult.class, obj));
+		}
+		return datas;
+	}
+
+	/**
+	 * 通过spring-data聚合
+	 * 
+	 * @param params
+	 */
+	@SuppressWarnings("unchecked")
+	public List<TotalResult> getAggregationBySpringData(
+			Map<String, Object> params) {
+		Morphia morphia = new Morphia();
+		morphia.map(TotalResult.class);
+		Set<String> onumberSet = (Set<String>) params.get("onumberSet");
+		Integer totalMin = (Integer) params.get("totalMin");
+		Aggregation agg = Aggregation.newAggregation(
+				Aggregation.match(Criteria.where("onumber").in(onumberSet)),
+				Aggregation.unwind("items"), Aggregation.group("items.ino")
+						.sum("items.quantity").as("total"),
+				Aggregation.match(Criteria.where("total").gt(totalMin)));
+
+		AggregationResults<BasicDBObject> outputType = mongoTemplate.aggregate(
+				agg, COLLECTION, BasicDBObject.class);
+		List<TotalResult> datas = new ArrayList<TotalResult>();
+		for (Iterator<BasicDBObject> iterator = outputType.iterator(); iterator
 				.hasNext();) {
 			DBObject obj = iterator.next();
 			datas.add(morphia.fromDBObject(TotalResult.class, obj));

@@ -3,8 +3,10 @@ package com.chelsea.spring_data_mongodb;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -14,6 +16,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.chelsea.spring_data_mongodb.bean.Item;
 import com.chelsea.spring_data_mongodb.bean.Order;
 import com.chelsea.spring_data_mongodb.bean.PageModel;
+import com.chelsea.spring_data_mongodb.bean.TotalResult;
 import com.chelsea.spring_data_mongodb.dao.OrderDao;
 
 public class OrderTest extends TestCase {
@@ -170,6 +173,24 @@ public class OrderTest extends TestCase {
 			Date date = order.getDate();
 			System.out.println("id:" + id + "\tcname:" + cname + "\tonumber:"
 					+ onumber + "\tdate:" + date);
+		}
+	}
+
+	@Test
+	public void testAggregation() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		Set<String> onumberSet = new HashSet<String>();
+		onumberSet.add("001");
+		onumberSet.add("002");
+		onumberSet.add("003");
+		params.put("onumberSet", onumberSet);
+		params.put("totalMin", 1);
+		List<TotalResult> list = orderDao.getAggregation(params);
+		for (int i = 0; i < list.size(); i++) {
+			TotalResult result = list.get(i);
+			String id = result.getId();
+			Integer total = result.getTotal();
+			System.out.println("id:" + id + "\ttotal:" + total);
 		}
 	}
 

@@ -1,8 +1,11 @@
 package com.chelsea.spring_data_mongodb.dao;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -14,7 +17,9 @@ import org.springframework.stereotype.Repository;
 
 import com.chelsea.spring_data_mongodb.bean.Order;
 import com.chelsea.spring_data_mongodb.bean.PageModel;
+import com.chelsea.spring_data_mongodb.bean.TotalResult;
 import com.google.code.morphia.Morphia;
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -168,6 +173,42 @@ public class OrderDao {
 		page.setRowCount(count);
 		page.setDatas(datas);
 		return page;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TotalResult> getAggregation(Map<String, Object> params) {
+		Set<String> onumberSet = (Set<String>) params.get("onumberSet");
+		Integer totalMin = (Integer) params.get("totalMin");
+		Morphia morphia = new Morphia();
+		morphia.map(TotalResult.class);
+		// 过滤条件
+		DBObject queryObject = new BasicDBObject("onumber", new BasicDBObject(
+				"$in", onumberSet));
+		DBObject queryMatch = new BasicDBObject("$match", queryObject);
+		// 展开数组
+		DBObject queryUnwind = new BasicDBObject("$unwind", "$items");
+		// 分组统计
+		DBObject groupObject = new BasicDBObject();
+		groupObject.put("_id", "$items.ino");
+		groupObject.put("total", new BasicDBObject("$sum", "$items.quantity"));
+		DBObject queryGroup = new BasicDBObject("$group", groupObject);
+		// 过滤条件
+		DBObject finalizeMatch = new BasicDBObject("$match", new BasicDBObject(
+				"total", new BasicDBObject("$gt", totalMin)));
+		List<DBObject> listDBObject = new ArrayList<DBObject>();
+		listDBObject.add(queryMatch);
+		listDBObject.add(queryUnwind);
+		listDBObject.add(queryGroup);
+		listDBObject.add(finalizeMatch);
+		AggregationOutput output = mongoTemplate.getCollection(COLLECTION)
+				.aggregate(listDBObject);
+		List<TotalResult> datas = new ArrayList<TotalResult>();
+		for (Iterator<DBObject> iterator = output.results().iterator(); iterator
+				.hasNext();) {
+			DBObject obj = iterator.next();
+			datas.add(morphia.fromDBObject(TotalResult.class, obj));
+		}
+		return datas;
 	}
 
 }

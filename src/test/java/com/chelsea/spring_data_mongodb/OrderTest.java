@@ -13,6 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.chelsea.spring_data_mongodb.bean.Item;
 import com.chelsea.spring_data_mongodb.bean.Order;
+import com.chelsea.spring_data_mongodb.bean.PageModel;
 import com.chelsea.spring_data_mongodb.dao.OrderDao;
 
 public class OrderTest extends TestCase {
@@ -116,16 +117,59 @@ public class OrderTest extends TestCase {
 	public void testDropCollection() {
 		orderDao.dropCollection();
 	}
-	
+
 	@Test
-	public void testFind(){
+	public void testFind() {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("onumber1", "005");
 		params.put("onumber2", "001");
-		List <Order> list = orderDao.find(params);
-		for(int i=0;i<list.size();i++){
+		List<Order> list = orderDao.find(params);
+		for (int i = 0; i < list.size(); i++) {
 			Order order = list.get(i);
 			System.out.println(order.getOnumber());
+		}
+	}
+
+	@Test
+	public void testUpdateFirst() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cname", "zcy1");
+		params.put("date", "2015-08-08");
+		orderDao.updateFirst(params);
+	}
+
+	@Test
+	public void testUpsert() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cname", "shevchenko");
+		params.put("date", "2015-08-08");
+		orderDao.upsert(params);
+	}
+
+	@Test
+	public void testUpdatemulti() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("date", "2015-08-08");
+		orderDao.updateMulti(params);
+	}
+
+	@Test
+	public void testGetOrder() {
+		PageModel<Order> page = new PageModel<Order>();
+		page.setPageNo(2);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("min", "001");
+		params.put("max", "009");
+		PageModel<Order> pageModel = orderDao.getOrder(page, params);
+		List<Order> list = pageModel.getDatas();
+		for (int i = 0; i < list.size(); i++) {
+			Order order = list.get(i);
+			String id = order.getId();
+			String cname = order.getCname();
+			String onumber = order.getOnumber();
+			Date date = order.getDate();
+			System.out.println("id:" + id + "\tcname:" + cname + "\tonumber:"
+					+ onumber + "\tdate:" + date);
 		}
 	}
 

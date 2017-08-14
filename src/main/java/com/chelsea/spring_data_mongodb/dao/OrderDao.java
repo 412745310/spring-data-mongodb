@@ -203,7 +203,7 @@ public class OrderDao {
 		DBObject queryUnwind = new BasicDBObject("$unwind", "$items");
 		// 分组统计
 		DBObject groupObject = new BasicDBObject();
-		groupObject.put("_id", "$items.ino");
+		groupObject.put("_id", "$items.pnumber");
 		groupObject.put("total", new BasicDBObject("$sum", "$items.quantity"));
 		DBObject queryGroup = new BasicDBObject("$group", groupObject);
 		// 过滤条件
@@ -239,7 +239,7 @@ public class OrderDao {
 		Integer totalMin = (Integer) params.get("totalMin");
 		Aggregation agg = Aggregation.newAggregation(
 				Aggregation.match(Criteria.where("onumber").in(onumberSet)),
-				Aggregation.unwind("items"), Aggregation.group("items.ino")
+				Aggregation.unwind("items"), Aggregation.group("items.pnumber")
 						.sum("items.quantity").as("total"),
 				Aggregation.match(Criteria.where("total").gt(totalMin)));
 
